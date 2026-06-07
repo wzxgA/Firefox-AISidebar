@@ -4,11 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9020d071-8b36-475a-9ec8-aab0034c368b" name="更改" comment="" />
+    <list default="true" id="9020d071-8b36-475a-9ec8-aab0034c368b" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/background.js" beforeDir="false" afterPath="$PROJECT_DIR$/background.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/content/content.js" beforeDir="false" afterPath="$PROJECT_DIR$/content/content.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sidebar/sidebar.css" beforeDir="false" afterPath="$PROJECT_DIR$/sidebar/sidebar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sidebar/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/sidebar/sidebar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sidebar/sidebar.js" beforeDir="false" afterPath="$PROJECT_DIR$/sidebar/sidebar.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -31,6 +42,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/DevProject/llq",
     "node.js.detected.package.eslint": "true",
@@ -58,7 +70,7 @@
       <option name="presentableId" value="Default" />
       <updated>1754488488195</updated>
       <workItem from="1754488489516" duration="844000" />
-      <workItem from="1780838733810" duration="975000" />
+      <workItem from="1780838733810" duration="1942000" />
     </task>
     <servers />
   </component>

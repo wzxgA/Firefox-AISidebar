@@ -1,4 +1,5 @@
 let tooltip = null;
+let pendingSelection = null;
 
 function getSelectionInfo() {
   const selection = window.getSelection();
@@ -17,10 +18,14 @@ function removeTooltip() {
     tooltip.remove();
     tooltip = null;
   }
+  pendingSelection = null;
 }
 
-function createTooltip(rect) {
+function createTooltip(rect, selectionInfo) {
   removeTooltip();
+
+  // Save selection info immediately — clicking the tooltip will clear the selection
+  pendingSelection = selectionInfo;
 
   tooltip = document.createElement('div');
   tooltip.id = 'llm-sidebar-tooltip';
@@ -45,9 +50,9 @@ function createTooltip(rect) {
 
   tooltip.addEventListener('click', (e) => {
     e.stopPropagation();
-    const info = getSelectionInfo();
-    if (info) {
-      browser.runtime.sendMessage({ type: 'selected-text', ...info });
+    e.preventDefault();
+    if (pendingSelection) {
+      browser.runtime.sendMessage({ type: 'selected-text', ...pendingSelection });
     }
     removeTooltip();
   });
@@ -56,7 +61,6 @@ function createTooltip(rect) {
 }
 
 document.addEventListener('mouseup', (e) => {
-  // Small delay to let the selection settle
   setTimeout(() => {
     const info = getSelectionInfo();
     if (!info) {
@@ -75,7 +79,7 @@ document.addEventListener('mouseup', (e) => {
       return;
     }
 
-    createTooltip(rect);
+    createTooltip(rect, info);
   }, 10);
 });
 

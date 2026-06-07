@@ -1,13 +1,9 @@
 const messagesEl = document.getElementById('messages');
 const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
-const contextBar = document.getElementById('context-bar');
-const contextText = document.getElementById('context-text');
-const clearContextBtn = document.getElementById('clear-context');
 const clearChatBtn = document.getElementById('clear-chat');
 const typingIndicator = document.getElementById('typing-indicator') || createTypingIndicator();
 
-let selectedContext = null;
 let conversationHistory = [];
 let currentAssistantMsg = null;
 let abortController = null;
@@ -69,29 +65,9 @@ function createTypingIndicator() {
   return el;
 }
 
-// ---- Context Management ----
-clearContextBtn.addEventListener('click', () => {
-  clearContext();
-});
-
-function setContext(info) {
-  selectedContext = info;
-  contextText.textContent = info.text.length > 300
-    ? info.text.substring(0, 300) + '...'
-    : info.text;
-  contextBar.classList.remove('hidden');
-}
-
-function clearContext() {
-  selectedContext = null;
-  contextText.textContent = '';
-  contextBar.classList.add('hidden');
-}
-
 // ---- Messages ----
 clearChatBtn.addEventListener('click', () => {
   conversationHistory = [];
-  clearContext();
   // Remove all message elements, keep welcome
   messagesEl.querySelectorAll('.message').forEach(m => m.remove());
   messagesEl.querySelector('.welcome-msg')?.classList.remove('hidden');
@@ -173,7 +149,7 @@ function renderMarkdown(text) {
 // ---- API Call (Streaming) ----
 async function sendMessage() {
   const question = userInput.value.trim();
-  if (!question && !selectedContext) return;
+  if (!question) return;
   if (abortController) return; // Already sending
 
   const settings = await browser.storage.local.get({
@@ -187,19 +163,16 @@ async function sendMessage() {
     return;
   }
 
-  // Build user message
-  let userContent = '';
-  if (selectedContext) {
-    userContent += `Context from "${selectedContext.pageTitle}" (${selectedContext.url}):\n---\n${selectedContext.text}\n---\n\n`;
-  }
-  userContent += question || 'Please summarize the selected text.';
+  const userContent = question;
+  const displayContent = question.length > 200
+    ? question.substring(0, 200) + '...'
+    : question;
 
-  const userMsg = addMessage('user', question || 'Summarize selected text');
+  addMessage('user', displayContent);
   conversationHistory.push({ role: 'user', content: userContent });
 
-  // Clear input and context
+  // Clear input
   userInput.value = '';
-  clearContext();
   userInput.style.height = 'auto';
 
   // Show typing indicator
@@ -337,12 +310,9 @@ userInput.addEventListener('input', () => {
 // ---- Receive messages from content script / background ----
 browser.runtime.onMessage.addListener((message) => {
   if (message.type === 'selected-text') {
-    setContext({
-      text: message.text,
-      pageTitle: message.pageTitle,
-      url: message.url
-    });
-    // Focus the input so user can type a question
+    userInput.value = message.text;
+    userInput.style.height = 'auto';
+    userInput.style.height = Math.min(userInput.scrollHeight, 120) + 'px';
     userInput.focus();
   }
 });

@@ -1,3 +1,11 @@
+// Relay messages from content script to sidebar
+browser.runtime.onMessage.addListener((message, sender) => {
+  if (message.type === 'selected-text' && sender.tab) {
+    // Forward to sidebar — fire-and-forget, sidebar may not be open
+    browser.runtime.sendMessage(message).catch(() => {});
+  }
+});
+
 // Create context menu item
 browser.contextMenus.create({
   id: 'ask-llm-selection',
@@ -15,10 +23,7 @@ browser.contextMenus.onClicked.addListener((info, tab) => {
       url: tab?.url || ''
     };
 
-    // Send to sidebar
-    browser.runtime.sendMessage(payload).catch(() => {
-      // Sidebar may not be open — that's fine, the message is fire-and-forget
-    });
+    browser.runtime.sendMessage(payload).catch(() => {});
   }
 });
 
