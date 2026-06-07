@@ -120,9 +120,19 @@ document.addEventListener('mousedown', (e) => {
   }
 });
 
-// Listen for re-request of current selection from sidebar
+// Listen for messages from sidebar
 browser.runtime.onMessage.addListener((message) => {
   if (message.type === 'get-selection') {
     return Promise.resolve(getSelectionInfo());
+  }
+  if (message.type === 'get-page-text') {
+    const text = (document.body.innerText || document.body.textContent || '').trim();
+    // Truncate in content script to avoid huge data transfer
+    const maxChars = 10000;
+    return Promise.resolve({
+      text: text.length > maxChars ? text.substring(0, maxChars) : text,
+      pageTitle: document.title,
+      url: window.location.href
+    });
   }
 });

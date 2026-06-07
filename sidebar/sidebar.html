@@ -38,8 +38,12 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="system-prompt">System Prompt</label>
+        <label for="system-prompt">Chat System Prompt</label>
         <textarea id="system-prompt" rows="3" placeholder="You are a helpful assistant..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="summary-prompt">Summary System Prompt</label>
+        <textarea id="summary-prompt" rows="3" placeholder="Summarize the following webpage..."></textarea>
       </div>
       <div class="settings-buttons">
         <button type="submit" class="btn btn-primary">Save</button>
@@ -48,17 +52,23 @@
     </form>
   </div>
 
-  <!-- Main Chat UI -->
-  <div id="chat-container">
-    <!-- Header -->
-    <div class="chat-header">
-      <h2>LLM Sidebar</h2>
-      <div class="header-actions">
-        <button id="clear-chat" class="icon-btn" title="Clear chat">&#x1f5d1;</button>
-        <button id="open-settings" class="icon-btn" title="Settings">&#x2699;</button>
-      </div>
+  <!-- Header -->
+  <div class="chat-header">
+    <h2>LLM Sidebar</h2>
+    <div class="header-actions">
+      <button id="clear-chat" class="icon-btn" title="Clear chat">&#x1f5d1;</button>
+      <button id="open-settings" class="icon-btn" title="Settings">&#x2699;</button>
     </div>
+  </div>
 
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="chat">Chat</button>
+    <button class="tab-btn" data-tab="summary">Summary</button>
+  </div>
+
+  <!-- Chat View -->
+  <div id="chat-view" class="tab-content active">
     <!-- Messages area -->
     <div id="messages" class="messages">
       <div class="welcome-msg">
@@ -70,6 +80,19 @@
     <div class="input-area">
       <textarea id="user-input" placeholder="Ask a question..." rows="2"></textarea>
       <button id="send-btn" class="btn btn-primary" title="Send">&#x27a4;</button>
+    </div>
+  </div>
+
+  <!-- Summary View -->
+  <div id="summary-view" class="tab-content">
+    <div class="summary-toolbar">
+      <span id="summary-page-title" class="summary-page-title">No page loaded</span>
+      <button id="summarize-btn" class="btn btn-primary">Summarize Page</button>
+    </div>
+    <div id="summary-content" class="summary-content">
+      <div class="summary-placeholder">
+        Click <strong>"Summarize Page"</strong> to generate a summary of the current page.
+      </div>
     </div>
   </div>
 

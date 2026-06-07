@@ -3,10 +3,44 @@ const userInput = document.getElementById('user-input');
 const sendBtn = document.getElementById('send-btn');
 const clearChatBtn = document.getElementById('clear-chat');
 const typingIndicator = document.getElementById('typing-indicator') || createTypingIndicator();
+const summarizeBtn = document.getElementById('summarize-btn');
+const summaryContent = document.getElementById('summary-content');
+const summaryPageTitle = document.getElementById('summary-page-title');
 
 let conversationHistory = [];
 let currentAssistantMsg = null;
 let abortController = null;
+let summaryAbortController = null;
+let currentPageUrl = '';
+let savedSummary = null;
+
+// ---- Tab Switching ----
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    switchTab(tab);
+  });
+});
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+  document.getElementById(`${tab}-view`).classList.add('active');
+}
+
+// Update page info when tab switches to summary or when receiving messages
+async function updatePageInfo() {
+  try {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (tab) {
+      currentPageUrl = tab.url;
+      summaryPageTitle.textContent = tab.title || 'No page';
+    }
+  } catch {
+    summaryPageTitle.textContent = 'No page';
+  }
+}
 
 // ---- Settings Panel ----
 const settingsPanel = document.getElementById('settings-panel');
@@ -16,6 +50,7 @@ const apiKeyInput = document.getElementById('api-key');
 const modelNameInput = document.getElementById('model-name');
 const themeSelect = document.getElementById('theme-select');
 const systemPromptInput = document.getElementById('system-prompt');
+const summaryPromptInput = document.getElementById('summary-prompt');
 
 document.getElementById('open-settings').addEventListener('click', () => {
   loadSettingsToForm();
@@ -48,13 +83,15 @@ settingsForm.addEventListener('submit', (e) => {
     apiKey: apiKeyInput.value.trim(),
     modelName: modelNameInput.value.trim(),
     theme: themeSelect.value,
-    systemPrompt: systemPromptInput.value.trim()
+    systemPrompt: systemPromptInput.value.trim(),
+    summaryPrompt: summaryPromptInput.value.trim()
   }).then(() => {
     settingsPanel.classList.add('hidden');
   });
 });
 
 const DEFAULT_SYSTEM_PROMPT = 'You are a helpful assistant. When provided with context from a webpage, use it to answer the user\'s question. Format your responses with markdown for readability.';
+const DEFAULT_SUMMARY_PROMPT = 'Summarize the following webpage content concisely. Highlight the main topic, key points, and important details. Use markdown formatting.';
 
 function loadSettingsToForm() {
   browser.storage.local.get({
@@ -62,13 +99,15 @@ function loadSettingsToForm() {
     apiKey: '',
     modelName: 'gpt-4o',
     theme: 'light',
-    systemPrompt: DEFAULT_SYSTEM_PROMPT
+    systemPrompt: DEFAULT_SYSTEM_PROMPT,
+    summaryPrompt: DEFAULT_SUMMARY_PROMPT
   }).then((items) => {
     apiUrlInput.value = items.apiUrl;
     apiKeyInput.value = items.apiKey;
     modelNameInput.value = items.modelName;
     themeSelect.value = items.theme;
     systemPromptInput.value = items.systemPrompt;
+    summaryPromptInput.value = items.summaryPrompt;
   });
 }
 
@@ -318,6 +357,146 @@ function abortSend() {
   }
 }
 
+// ---- Summarize Page ----
+async function summarizePage() {
+  if (summaryAbortController) return;
+
+  // Get page text from content script
+  let pageText = '';
+  try {
+    const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+    if (!tab) throw new Error('No active tab');
+
+    const response = await browser.tabs.sendMessage(tab.id, { type: 'get-page-text' });
+    if (response && response.text) {
+      pageText = response.text;
+      currentPageUrl = response.url;
+      summaryPageTitle.textContent = response.pageTitle || 'No page';
+    } else {
+      throw new Error('Could not extract page content');
+    }
+  } catch (err) {
+    summaryContent.innerHTML = `<div class="summary-result" style="color:var(--msg-error-text)">**Error:** ${err.message}. Try refreshing the page.</div>`;
+    return;
+  }
+
+  if (!pageText.trim()) {
+    summaryContent.innerHTML = '<div class="summary-result" style="color:var(--msg-error-text)">**Error:** Page has no readable text content.</div>';
+    return;
+  }
+
+  // Load settings
+  const settings = await browser.storage.local.get({
+    apiUrl: 'https://api.openai.com',
+    apiKey: '',
+    modelName: 'gpt-4o',
+    summaryPrompt: DEFAULT_SUMMARY_PROMPT
+  });
+
+  if (!settings.apiKey) {
+    summaryContent.innerHTML = '<div class="summary-result" style="color:var(--msg-error-text)">**Error:** API key not configured.</div>';
+    return;
+  }
+
+  // Truncate text
+  const maxChars = 8000;
+  const truncatedText = pageText.length > maxChars
+    ? pageText.substring(0, maxChars) + '...'
+    : pageText;
+
+  // UI state
+  summarizeBtn.disabled = true;
+  summarizeBtn.textContent = 'Summarizing...';
+  summaryContent.innerHTML = '<div class="summary-result"><em>Generating summary...</em></div>';
+
+  summaryAbortController = new AbortController();
+
+  try {
+    const apiBase = settings.apiUrl.replace(/\/+$/, '');
+    const endpoint = apiBase.endsWith('/v1') ? `${apiBase}/chat/completions`
+      : apiBase.endsWith('/v1/chat/completions') ? apiBase
+      : `${apiBase}/v1/chat/completions`;
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${settings.apiKey}`
+      },
+      body: JSON.stringify({
+        model: settings.modelName,
+        messages: [
+          { role: 'system', content: settings.summaryPrompt || DEFAULT_SUMMARY_PROMPT },
+          { role: 'user', content: `Webpage URL: ${currentPageUrl}\n\nContent:\n${truncatedText}` }
+        ],
+        stream: true
+      }),
+      signal: summaryAbortController.signal
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMsg = `API Error (${response.status}): `;
+      try {
+        const errJson = JSON.parse(errorText);
+        errorMsg += errJson.error?.message || errorText;
+      } catch {
+        errorMsg += errorText.substring(0, 200);
+      }
+      throw new Error(errorMsg);
+    }
+
+    // Stream summary
+    summaryContent.innerHTML = '<div class="summary-result"></div>';
+    const resultEl = summaryContent.querySelector('.summary-result');
+    let fullContent = '';
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || !trimmed.startsWith('data: ')) continue;
+        const data = trimmed.slice(6);
+        if (data === '[DONE]') continue;
+        try {
+          const parsed = JSON.parse(data);
+          const delta = parsed.choices?.[0]?.delta?.content;
+          if (delta) {
+            fullContent += delta;
+            resultEl.innerHTML = renderMarkdown(fullContent);
+          }
+        } catch { /* skip */ }
+      }
+    }
+
+    if (!fullContent) {
+      resultEl.innerHTML = '*(No response)*';
+    }
+
+    savedSummary = fullContent;
+
+  } catch (err) {
+    if (err.name === 'AbortError') return;
+    summaryContent.innerHTML = `<div class="summary-result" style="color:var(--msg-error-text)">**Error:** ${err.message}</div>`;
+  } finally {
+    summarizeBtn.disabled = false;
+    summarizeBtn.textContent = 'Summarize Page';
+    summaryAbortController = null;
+  }
+}
+
+summarizeBtn.addEventListener('click', summarizePage);
+
 // ---- Event Listeners ----
 sendBtn.addEventListener('click', sendMessage);
 
@@ -350,3 +529,4 @@ browser.runtime.onMessage.addListener((message) => {
 // ---- Initial setup ----
 loadTheme();
 loadSettingsToForm();
+updatePageInfo();
