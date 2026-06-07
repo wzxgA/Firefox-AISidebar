@@ -1,29 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  image-rendering: pixelated;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 13px;
-  background: #1a1a2e;
-  color: #e0e0e0;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 10px;
+  background: #1E140E;
+  color: #E8D090;
   height: 100vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  line-height: 1.6;
 }
 
 /* ---- Settings Panel ---- */
 .settings-panel {
   position: absolute;
   inset: 0;
-  background: #1a1a2e;
+  background: #2E1F14;
   z-index: 10;
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 12px;
+  border: 3px solid #0F0A06;
+  box-shadow: inset 0 0 0 2px #5A3F2B;
 }
 
 .settings-panel.hidden {
@@ -35,11 +41,14 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid #5A3F2B;
 }
 
 .settings-header h3 {
-  font-size: 16px;
-  color: #fff;
+  font-size: 11px;
+  color: #DAAF4B;
+  text-shadow: 2px 2px 0 #0F0A06;
 }
 
 .form-group {
@@ -48,29 +57,32 @@ body {
 
 label {
   display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: #bbb;
-  margin-bottom: 4px;
+  font-size: 8px;
+  color: #C4983A;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 input {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #333;
-  border-radius: 5px;
-  background: #16213e;
-  color: #e0e0e0;
-  font-size: 13px;
+  border: 3px solid #0F0A06;
+  border-radius: 0;
+  background: #3D2B1C;
+  color: #E8D090;
+  font-size: 9px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
 }
 
 input:focus {
   outline: none;
-  border-color: #6C3CE1;
+  border-color: #C4983A;
+  box-shadow: 0 0 0 2px #5A3F2B;
 }
 
 input::placeholder {
-  color: #555;
+  color: #6B5540;
 }
 
 .password-row {
@@ -101,169 +113,222 @@ input::placeholder {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid #2a2a4a;
+  padding: 10px 12px;
+  border-bottom: 3px solid #5A3F2B;
+  background: #2E1F14;
+  box-shadow: inset 0 -2px 0 0 #0F0A06;
   flex-shrink: 0;
 }
 
 .chat-header h2 {
-  font-size: 15px;
-  color: #fff;
+  font-size: 10px;
+  color: #DAAF4B;
+  text-shadow: 2px 2px 0 #0F0A06;
 }
 
 .header-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 /* ---- Buttons ---- */
 .btn {
   padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: 600;
+  border: 3px solid #0F0A06;
+  border-radius: 0;
+  font-size: 9px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
   cursor: pointer;
-  transition: background 0.2s;
+  color: #E8D090;
+  box-shadow: 2px 2px 0 #0F0A06;
+}
+
+.btn:active {
+  box-shadow: 1px 1px 0 #0F0A06;
+  transform: translate(1px, 1px);
 }
 
 .btn-primary {
-  background: #6C3CE1;
-  color: white;
+  background: #C4983A;
+  color: #1E140E;
+  box-shadow: 0 4px 0 #6B2F1C, 2px 2px 0 #0F0A06;
 }
 
 .btn-primary:hover {
-  background: #5a2fd0;
+  background: #DAAF4B;
+}
+
+.btn-primary:active {
+  background: #8B6B2F;
+  box-shadow: 0 2px 0 #6B2F1C, 1px 1px 0 #0F0A06;
+  transform: translate(1px, 2px);
 }
 
 .btn-primary:disabled {
-  background: #3d3166;
-  color: #888;
+  background: #5A3F2B;
+  color: #8B7B5A;
+  box-shadow: 0 2px 0 #3D2B1C, 1px 1px 0 #0F0A06;
   cursor: not-allowed;
+  transform: translate(1px, 2px);
 }
 
 .btn-secondary {
-  background: #333;
-  color: #ccc;
+  background: #3D2B1C;
+  box-shadow: 0 4px 0 #2E1F14, 2px 2px 0 #0F0A06;
 }
 
 .btn-secondary:hover {
-  background: #444;
+  background: #5A3F2B;
+}
+
+.btn-secondary:active {
+  background: #2E1F14;
+  box-shadow: 0 2px 0 #1E140E, 1px 1px 0 #0F0A06;
+  transform: translate(1px, 2px);
 }
 
 .icon-btn {
   width: 32px;
   height: 32px;
-  border: none;
-  border-radius: 5px;
-  background: transparent;
-  color: #aaa;
-  font-size: 16px;
+  border: 2px solid #5A3F2B;
+  border-radius: 0;
+  background: #2E1F14;
+  color: #C4983A;
+  font-size: 14px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, color 0.2s;
+  box-shadow: 2px 2px 0 #0F0A06;
 }
 
 .icon-btn:hover {
-  background: #2a2a4a;
-  color: #fff;
+  background: #3D2B1C;
+  border-color: #C4983A;
+  color: #DAAF4B;
+}
+
+.icon-btn:active {
+  box-shadow: 1px 1px 0 #0F0A06;
+  transform: translate(1px, 1px);
 }
 
 .icon-btn.small {
   width: 28px;
   height: 28px;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 /* ---- Messages ---- */
 .messages {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
+  background: #1E140E;
+  /* Pixel scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #5A3F2B #1E140E;
+}
+
+.messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: #1E140E;
+  border-left: 2px solid #2E1F14;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: #5A3F2B;
+  border: 2px solid #3D2B1C;
 }
 
 .welcome-msg {
   text-align: center;
-  color: #666;
-  margin-top: 40px;
-  padding: 0 20px;
-  line-height: 1.5;
+  color: #6B5540;
+  margin-top: 32px;
+  padding: 12px;
+  line-height: 2;
+  font-size: 8px;
+  background: #2E1F14;
+  border: 3px solid #3D2B1C;
+  max-width: 85%;
+  align-self: center;
 }
 
 .welcome-msg strong {
-  color: #6C3CE1;
+  color: #C4983A;
+  text-shadow: 1px 1px 0 #0F0A06;
 }
 
 /* ---- Message Bubbles ---- */
 .message {
   max-width: 90%;
-  padding: 8px 12px;
-  border-radius: 10px;
-  line-height: 1.5;
+  padding: 10px 12px;
+  border-radius: 0;
+  line-height: 1.7;
   word-break: break-word;
-  animation: fadeIn 0.2s;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  font-size: 8px;
+  position: relative;
 }
 
 .message.user {
   align-self: flex-end;
-  background: #6C3CE1;
-  color: white;
-  border-bottom-right-radius: 3px;
+  background: #3D2B1C;
+  color: #E8D090;
+  border: 2px solid #C4983A;
+  box-shadow: 3px 3px 0 #0F0A06;
 }
 
 .message.assistant {
   align-self: flex-start;
-  background: #16213e;
-  border: 1px solid #2a2a4a;
-  border-bottom-left-radius: 3px;
+  background: #2E1F14;
+  border: 2px solid #5A3F2B;
+  box-shadow: 3px 3px 0 #0F0A06;
 }
 
 .message.assistant.error {
-  border-color: #c0392b;
-  color: #e74c3c;
+  border-color: #C0392B;
+  background: #2E1A1A;
+  color: #E74C3C;
 }
 
 .message .label {
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  opacity: 0.7;
+  font-size: 7px;
+  font-weight: normal;
+  margin-bottom: 6px;
+  opacity: 0.8;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  color: #C4983A;
 }
 
-/* Markdown-like styling inside assistant messages */
+/* Markdown in assistant messages */
 .message.assistant p {
   margin: 4px 0;
 }
 
 .message.assistant pre {
-  background: #0d1117;
-  border: 1px solid #333;
-  border-radius: 4px;
+  background: #1A100A;
+  border: 2px solid #3D2B1C;
   padding: 8px 10px;
   margin: 8px 0;
   overflow-x: auto;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 7px;
+  line-height: 1.5;
+  color: #D4A843;
 }
 
 .message.assistant code {
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 12px;
-  background: #0d1117;
-  padding: 1px 4px;
-  border-radius: 3px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 7px;
+  background: #1A100A;
+  padding: 2px 4px;
+  color: #D4A843;
 }
 
 .message.assistant pre code {
@@ -274,79 +339,81 @@ input::placeholder {
 .message.assistant ul,
 .message.assistant ol {
   margin: 4px 0;
-  padding-left: 18px;
+  padding-left: 16px;
 }
 
 .message.assistant li {
   margin: 2px 0;
 }
 
-/* ---- Loading dots ---- */
+/* ---- Typing indicator ---- */
 .typing-indicator {
   display: none;
   align-self: flex-start;
-  padding: 8px 14px;
-  background: #16213e;
-  border: 1px solid #2a2a4a;
-  border-radius: 10px;
-  border-bottom-left-radius: 3px;
+  padding: 10px 14px;
+  background: #2E1F14;
+  border: 2px solid #5A3F2B;
+  box-shadow: 3px 3px 0 #0F0A06;
 }
 
 .typing-indicator.active {
   display: flex;
-  gap: 4px;
+  gap: 5px;
 }
 
 .typing-indicator span {
-  width: 6px;
-  height: 6px;
-  background: #6C3CE1;
-  border-radius: 50%;
-  animation: bounce 1.2s infinite;
+  width: 8px;
+  height: 8px;
+  background: #C4983A;
+  border: 1px solid #8B6B2F;
 }
-
-.typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
-.typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
 
 @keyframes bounce {
   0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-6px); }
+  30% { transform: translateY(-8px); }
 }
+
+.typing-indicator span:nth-child(1) { animation: bounce 1.2s infinite; }
+.typing-indicator span:nth-child(2) { animation: bounce 1.2s infinite 0.15s; }
+.typing-indicator span:nth-child(3) { animation: bounce 1.2s infinite 0.3s; }
 
 /* ---- Input Area ---- */
 .input-area {
   display: flex;
   gap: 8px;
-  padding: 10px 14px;
-  border-top: 1px solid #2a2a4a;
+  padding: 10px 12px;
+  border-top: 3px solid #5A3F2B;
+  background: #2E1F14;
+  box-shadow: inset 0 2px 0 0 #0F0A06;
   flex-shrink: 0;
 }
 
 .input-area textarea {
   flex: 1;
   padding: 8px 10px;
-  border: 1px solid #333;
-  border-radius: 5px;
-  background: #16213e;
-  color: #e0e0e0;
-  font-size: 13px;
-  font-family: inherit;
+  border: 3px solid #0F0A06;
+  border-radius: 0;
+  background: #3D2B1C;
+  color: #E8D090;
+  font-size: 9px;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
   resize: none;
-  line-height: 1.4;
+  line-height: 1.6;
 }
 
 .input-area textarea:focus {
   outline: none;
-  border-color: #6C3CE1;
+  border-color: #C4983A;
+  box-shadow: 0 0 0 2px #5A3F2B;
 }
 
 .input-area textarea::placeholder {
-  color: #555;
+  color: #6B5540;
 }
 
 .input-area .btn {
   align-self: flex-end;
   padding: 8px 12px;
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1;
 }

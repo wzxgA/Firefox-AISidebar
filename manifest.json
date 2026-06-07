@@ -24,6 +24,9 @@
       "description": "Toggle LLM Sidebar"
     }
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src *"
+  },
   "sidebar_action": {
     "default_title": "LLM Sidebar",
     "default_panel": "sidebar/sidebar.html",

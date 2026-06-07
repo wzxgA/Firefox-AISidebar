@@ -33,16 +33,16 @@ function createTooltip(rect, selectionInfo) {
   tooltip.style.cssText = `
     position: fixed;
     z-index: 2147483647;
-    background: #6C3CE1;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #C4983A;
+    color: #1E140E;
+    padding: 8px 14px;
+    border: 2px solid #6B2F1C;
+    font-size: 11px;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    transition: opacity 0.15s;
+    box-shadow: 4px 4px 0 #0F0A06;
     pointer-events: auto;
+    text-transform: uppercase;
   `;
 
   tooltip.style.left = Math.min(rect.right + 8, window.innerWidth - 100) + 'px';
