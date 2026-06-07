@@ -73,6 +73,7 @@ document.getElementById('toggle-key').addEventListener('click', () => {
   apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
 });
 
+
 // Theme switch (immediate — outside the Save button)
 themeSelect.addEventListener('change', () => {
   const theme = themeSelect.value;
@@ -155,9 +156,29 @@ function addMessage(role, content, isError = false) {
   div.className = `message ${role}${isError ? ' error' : ''}`;
 
   if (role === 'assistant') {
-    div.innerHTML = renderMarkdown(content);
+    const contentWrap = document.createElement('div');
+    contentWrap.className = 'msg-content';
+    contentWrap.innerHTML = renderMarkdown(content);
+    div.appendChild(contentWrap);
   } else {
     div.textContent = content;
+  }
+
+  // Add save button for assistant (non-error) messages
+  if (role === 'assistant' && !isError) {
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'message-save-btn';
+    saveBtn.title = 'Save as .md';
+    saveBtn.innerHTML = '&#x1f4be;';
+    saveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const msgContent = div.querySelector('.msg-content');
+      const html = msgContent ? msgContent.innerHTML : '';
+      const text = msgContent ? msgContent.textContent : '';
+      const label = text.replace(/\s+/g, ' ').trim().substring(0, 50);
+      saveMessage(label, html || text);
+    });
+    div.appendChild(saveBtn);
   }
 
   messagesEl.appendChild(div);
@@ -320,7 +341,7 @@ async function sendMessage() {
           const delta = parsed.choices?.[0]?.delta?.content;
           if (delta) {
             fullContent += delta;
-            currentAssistantMsg.innerHTML = renderMarkdown(fullContent);
+            currentAssistantMsg.querySelector('.msg-content').innerHTML = renderMarkdown(fullContent);
             scrollToBottom();
           }
         } catch {
@@ -331,7 +352,7 @@ async function sendMessage() {
 
     conversationHistory.push({ role: 'assistant', content: fullContent });
     if (!fullContent) {
-      currentAssistantMsg.innerHTML = '*(No response)*';
+      currentAssistantMsg.querySelector('.msg-content').innerHTML = '*(No response)*';
     }
 
   } catch (err) {
@@ -359,6 +380,28 @@ function abortSend() {
     typingIndicator.classList.remove('active');
     sendBtn.disabled = false;
   }
+}
+
+// ---- Save Message to .md ----
+async function saveMessage(label, content) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+  const safeLabel = label
+    .replace(/[\\/:*?"<>|]/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 50);
+  const filename = `${safeLabel}-${timestamp}.md`;
+
+  const blob = new Blob([content], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+
+  try {
+    await browser.downloads.download({ url, filename, saveAs: true });
+  } catch (err) {
+    console.error('Save failed:', err);
+  }
+
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 // ---- Summarize Page ----
@@ -493,6 +536,18 @@ async function summarizePage() {
     savedSummary = fullContent;
     saveSummary(summaryPageTitle.textContent, currentPageUrl, fullContent);
 
+    // Add save button row
+    const saveRow = document.createElement('div');
+    saveRow.className = 'summary-save-row';
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'btn btn-secondary btn-sm';
+    saveBtn.innerHTML = '&#x1f4be; Save as .md';
+    saveBtn.addEventListener('click', () => {
+      saveMessage(summaryPageTitle.textContent, fullContent);
+    });
+    saveRow.appendChild(saveBtn);
+    summaryContent.appendChild(saveRow);
+
   } catch (err) {
     if (err.name === 'AbortError') return;
     summaryContent.innerHTML = `<div class="summary-result" style="color:var(--msg-error-text)">**Error:** ${err.message}</div>`;
@@ -576,6 +631,18 @@ async function showHistorySummary(id) {
   if (!item) return;
 
   summaryContent.innerHTML = `<div class="summary-result">${renderMarkdown(item.content)}</div>`;
+
+  // Add save button for history items too
+  const saveRow = document.createElement('div');
+  saveRow.className = 'summary-save-row';
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'btn btn-secondary btn-sm';
+  saveBtn.innerHTML = '&#x1f4be; Save as .md';
+  saveBtn.addEventListener('click', () => {
+    saveMessage(item.pageTitle, item.content);
+  });
+  saveRow.appendChild(saveBtn);
+  summaryContent.appendChild(saveRow);
 
   // Highlight active
   historyList.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
