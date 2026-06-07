@@ -89,10 +89,20 @@
       <span id="summary-page-title" class="summary-page-title">No page loaded</span>
       <button id="summarize-btn" class="btn btn-primary">Summarize Page</button>
     </div>
+    <div class="summary-prompt-row">
+      <input type="text" id="summary-custom-prompt" placeholder="Custom instruction (e.g. summarize in Chinese, key points only)...">
+    </div>
     <div id="summary-content" class="summary-content">
       <div class="summary-placeholder">
         Click <strong>"Summarize Page"</strong> to generate a summary of the current page.
       </div>
+    </div>
+    <div id="summary-history" class="summary-history">
+      <div class="history-header">
+        <span class="history-title">History</span>
+        <button id="clear-history" class="icon-btn small" title="Clear all">&#x1f5d1;</button>
+      </div>
+      <div id="history-list" class="history-list"></div>
     </div>
   </div>
 

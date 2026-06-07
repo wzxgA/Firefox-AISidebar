@@ -27,6 +27,10 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
   document.getElementById(`${tab}-view`).classList.add('active');
+  if (tab === 'summary') {
+    updatePageInfo();
+    loadHistory();
+  }
 }
 
 // Update page info when tab switches to summary or when receiving messages
@@ -398,6 +402,9 @@ async function summarizePage() {
     return;
   }
 
+  // Read custom instruction
+  const customPrompt = document.getElementById('summary-custom-prompt').value.trim();
+
   // Truncate text
   const maxChars = 8000;
   const truncatedText = pageText.length > maxChars
@@ -427,7 +434,7 @@ async function summarizePage() {
         model: settings.modelName,
         messages: [
           { role: 'system', content: settings.summaryPrompt || DEFAULT_SUMMARY_PROMPT },
-          { role: 'user', content: `Webpage URL: ${currentPageUrl}\n\nContent:\n${truncatedText}` }
+          { role: 'user', content: `${customPrompt ? customPrompt + '\n\n' : ''}Webpage URL: ${currentPageUrl}\n\nContent:\n${truncatedText}` }
         ],
         stream: true
       }),
@@ -484,6 +491,7 @@ async function summarizePage() {
     }
 
     savedSummary = fullContent;
+    saveSummary(summaryPageTitle.textContent, currentPageUrl, fullContent);
 
   } catch (err) {
     if (err.name === 'AbortError') return;
@@ -496,6 +504,111 @@ async function summarizePage() {
 }
 
 summarizeBtn.addEventListener('click', summarizePage);
+
+// ---- Summary History ----
+const clearHistoryBtn = document.getElementById('clear-history');
+const historyList = document.getElementById('history-list');
+const MAX_HISTORY = 50;
+
+async function saveSummary(pageTitle, url, content) {
+  const { summaryHistory } = await browser.storage.local.get({ summaryHistory: [] });
+  const entry = {
+    id: Date.now(),
+    pageTitle,
+    url,
+    content,
+    date: new Date().toISOString()
+  };
+  summaryHistory.unshift(entry);
+  if (summaryHistory.length > MAX_HISTORY) {
+    summaryHistory.length = MAX_HISTORY;
+  }
+  await browser.storage.local.set({ summaryHistory });
+  renderHistoryList(summaryHistory);
+}
+
+async function loadHistory() {
+  const { summaryHistory } = await browser.storage.local.get({ summaryHistory: [] });
+  renderHistoryList(summaryHistory);
+}
+
+function renderHistoryList(list) {
+  if (!historyList) return;
+  if (list.length === 0) {
+    historyList.innerHTML = '<div class="history-empty">No summaries yet</div>';
+    return;
+  }
+  historyList.innerHTML = list.map(item => {
+    const date = new Date(item.date).toLocaleDateString();
+    return `
+      <div class="history-item" data-id="${item.id}">
+        <div class="history-item-info">
+          <div class="history-item-title">${escapeHtml(item.pageTitle)}</div>
+          <div class="history-item-date">${date}</div>
+        </div>
+        <button class="history-item-del" data-id="${item.id}" title="Delete">&#x2715;</button>
+      </div>
+    `;
+  }).join('');
+
+  // Click on history item (info area) → show summary
+  historyList.querySelectorAll('.history-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.history-item-del')) return;
+      const id = Number(el.dataset.id);
+      showHistorySummary(id);
+    });
+  });
+
+  // Delete button
+  historyList.querySelectorAll('.history-item-del').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const id = Number(btn.dataset.id);
+      await deleteHistoryItem(id);
+    });
+  });
+}
+
+async function showHistorySummary(id) {
+  const { summaryHistory } = await browser.storage.local.get({ summaryHistory: [] });
+  const item = summaryHistory.find(s => s.id === id);
+  if (!item) return;
+
+  summaryContent.innerHTML = `<div class="summary-result">${renderMarkdown(item.content)}</div>`;
+
+  // Highlight active
+  historyList.querySelectorAll('.history-item').forEach(el => el.classList.remove('active'));
+  const activeEl = historyList.querySelector(`[data-id="${id}"]`);
+  if (activeEl) activeEl.classList.add('active');
+}
+
+async function deleteHistoryItem(id) {
+  const { summaryHistory } = await browser.storage.local.get({ summaryHistory: [] });
+  const updated = summaryHistory.filter(s => s.id !== id);
+  await browser.storage.local.set({ summaryHistory: updated });
+  renderHistoryList(updated);
+
+  // If deleted item was being viewed, clear
+  const activeEl = historyList.querySelector(`[data-id="${id}"]`);
+  if (activeEl && activeEl.classList.contains('active')) {
+    summaryContent.innerHTML = '<div class="summary-placeholder">Click <strong>"Summarize Page"</strong> to generate a summary of the current page.</div>';
+  }
+}
+
+async function clearAllHistory() {
+  await browser.storage.local.set({ summaryHistory: [] });
+  renderHistoryList([]);
+  summaryContent.innerHTML = '<div class="summary-placeholder">Click <strong>"Summarize Page"</strong> to generate a summary of the current page.</div>';
+}
+
+clearHistoryBtn.addEventListener('click', clearAllHistory);
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
 
 // ---- Event Listeners ----
 sendBtn.addEventListener('click', sendMessage);
