@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "LLM Sidebar",
+  "version": "1.0",
+  "description": "Chat with LLMs from your browser sidebar. Select text on any page and ask questions.",
+  "icons": {
+    "16": "icons/icon-16.svg",
+    "48": "icons/icon-48.svg",
+    "96": "icons/icon-96.svg"
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "sidebar_action": {
+    "default_title": "LLM Sidebar",
+    "default_panel": "sidebar/sidebar.html",
+    "default_icon": "icons/icon-16.svg",
+    "open_at_install": true
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "llm-sidebar@example.com",
+      "strict_min_version": "112.0"
+    }
+  }
+}

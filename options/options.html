@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Sidebar Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="container">
+    <h1>LLM Sidebar Settings</h1>
+    <p class="subtitle">Configure your LLM API connection</p>
+
+    <form id="settings-form">
+      <div class="form-group">
+        <label for="api-url">API Endpoint URL</label>
+        <input type="url" id="api-url" placeholder="https://api.openai.com" autocomplete="off">
+        <span class="hint">Base URL for OpenAI-compatible API (e.g. https://api.openai.com, https://api.deepseek.com)</span>
+      </div>
+
+      <div class="form-group">
+        <label for="api-key">API Key</label>
+        <div class="password-wrapper">
+          <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
+          <button type="button" id="toggle-key" class="toggle-btn" title="Show/hide API key">&#x1f441;</button>
+        </div>
+        <span class="hint">Your API key is stored locally and never shared</span>
+      </div>
+
+      <div class="form-group">
+        <label for="model-name">Model Name</label>
+        <input type="text" id="model-name" placeholder="gpt-4o" autocomplete="off">
+        <span class="hint">Model identifier (e.g. gpt-4o, deepseek-chat, claude-3-opus)</span>
+      </div>
+
+      <div class="button-row">
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+        <span id="status" class="status"></span>
+      </div>
+    </form>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

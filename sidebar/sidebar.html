@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Sidebar</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <!-- Settings Panel (hidden by default) -->
+  <div id="settings-panel" class="settings-panel hidden">
+    <div class="settings-header">
+      <h3>Settings</h3>
+      <button id="close-settings" class="icon-btn" title="Close">&#x2715;</button>
+    </div>
+    <form id="settings-form">
+      <div class="form-group">
+        <label for="api-url">API Endpoint URL</label>
+        <input type="url" id="api-url" placeholder="https://api.openai.com" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="api-key">API Key</label>
+        <div class="password-row">
+          <input type="password" id="api-key" placeholder="sk-..." autocomplete="off">
+          <button type="button" id="toggle-key" class="icon-btn small" title="Show/hide">&#x1f441;</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="model-name">Model Name</label>
+        <input type="text" id="model-name" placeholder="gpt-4o" autocomplete="off">
+      </div>
+      <div class="settings-buttons">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="button" id="cancel-settings" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Main Chat UI -->
+  <div id="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+      <h2>LLM Sidebar</h2>
+      <div class="header-actions">
+        <button id="clear-chat" class="icon-btn" title="Clear chat">&#x1f5d1;</button>
+        <button id="open-settings" class="icon-btn" title="Settings">&#x2699;</button>
+      </div>
+    </div>
+
+    <!-- Messages area -->
+    <div id="messages" class="messages">
+      <div class="welcome-msg">
+        <p>Select text on any page and click <strong>"Ask LLM"</strong>, or type a question below.</p>
+      </div>
+    </div>
+
+    <!-- Context bar (shows when selected text is pending) -->
+    <div id="context-bar" class="context-bar hidden">
+      <div class="context-header">
+        <span class="context-label">Selected text</span>
+        <button id="clear-context" class="icon-btn small" title="Clear">&#x2715;</button>
+      </div>
+      <div id="context-text" class="context-text"></div>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+      <textarea id="user-input" placeholder="Ask a question..." rows="2"></textarea>
+      <button id="send-btn" class="btn btn-primary" title="Send">&#x27a4;</button>
+    </div>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>
