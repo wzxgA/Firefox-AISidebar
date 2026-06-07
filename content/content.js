@@ -21,11 +21,47 @@ function removeTooltip() {
   pendingSelection = null;
 }
 
-function createTooltip(rect, selectionInfo) {
+async function createTooltip(rect, selectionInfo) {
   removeTooltip();
 
-  // Save selection info immediately — clicking the tooltip will clear the selection
   pendingSelection = selectionInfo;
+
+  // Read theme to style tooltip accordingly
+  const { theme } = await browser.storage.local.get({ theme: 'light' });
+
+  let tooltipStyle;
+  if (theme === 'pixel') {
+    tooltipStyle = `
+      background: #C4983A;
+      color: #1E140E;
+      padding: 8px 14px;
+      border: 2px solid #6B2F1C;
+      font-size: 11px;
+      font-family: 'Press Start 2P', 'Courier New', monospace;
+      box-shadow: 4px 4px 0 #0F0A06;
+      text-transform: uppercase;
+    `;
+  } else if (theme === 'dark') {
+    tooltipStyle = `
+      background: #6C3CE1;
+      color: #ffffff;
+      padding: 6px 14px;
+      border: none;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    `;
+  } else {
+    tooltipStyle = `
+      background: #6C3CE1;
+      color: #ffffff;
+      padding: 6px 14px;
+      border: none;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    `;
+  }
 
   tooltip = document.createElement('div');
   tooltip.id = 'llm-sidebar-tooltip';
@@ -33,16 +69,10 @@ function createTooltip(rect, selectionInfo) {
   tooltip.style.cssText = `
     position: fixed;
     z-index: 2147483647;
-    background: #C4983A;
-    color: #1E140E;
-    padding: 8px 14px;
-    border: 2px solid #6B2F1C;
-    font-size: 11px;
-    font-family: 'Press Start 2P', 'Courier New', monospace;
     cursor: pointer;
-    box-shadow: 4px 4px 0 #0F0A06;
     pointer-events: auto;
-    text-transform: uppercase;
+    border-radius: ${theme === 'pixel' ? '0' : '6px'};
+    ${tooltipStyle}
   `;
 
   tooltip.style.left = Math.min(rect.right + 8, window.innerWidth - 100) + 'px';

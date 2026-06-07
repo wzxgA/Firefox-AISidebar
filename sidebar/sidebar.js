@@ -14,6 +14,7 @@ const settingsForm = document.getElementById('settings-form');
 const apiUrlInput = document.getElementById('api-url');
 const apiKeyInput = document.getElementById('api-key');
 const modelNameInput = document.getElementById('model-name');
+const themeSelect = document.getElementById('theme-select');
 
 document.getElementById('open-settings').addEventListener('click', () => {
   loadSettingsToForm();
@@ -32,12 +33,20 @@ document.getElementById('toggle-key').addEventListener('click', () => {
   apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
 });
 
+// Theme switch (immediate — outside the Save button)
+themeSelect.addEventListener('change', () => {
+  const theme = themeSelect.value;
+  applyTheme(theme);
+  browser.storage.local.set({ theme });
+});
+
 settingsForm.addEventListener('submit', (e) => {
   e.preventDefault();
   browser.storage.local.set({
     apiUrl: apiUrlInput.value.trim(),
     apiKey: apiKeyInput.value.trim(),
-    modelName: modelNameInput.value.trim()
+    modelName: modelNameInput.value.trim(),
+    theme: themeSelect.value
   }).then(() => {
     settingsPanel.classList.add('hidden');
   });
@@ -47,11 +56,25 @@ function loadSettingsToForm() {
   browser.storage.local.get({
     apiUrl: 'https://api.openai.com',
     apiKey: '',
-    modelName: 'gpt-4o'
+    modelName: 'gpt-4o',
+    theme: 'light'
   }).then((items) => {
     apiUrlInput.value = items.apiUrl;
     apiKeyInput.value = items.apiKey;
     modelNameInput.value = items.modelName;
+    themeSelect.value = items.theme;
+  });
+}
+
+// ---- Theme ----
+function applyTheme(theme) {
+  document.body.className = `theme-${theme}`;
+}
+
+function loadTheme() {
+  browser.storage.local.get({ theme: 'light' }).then((items) => {
+    applyTheme(items.theme);
+    if (themeSelect) themeSelect.value = items.theme;
   });
 }
 
@@ -318,4 +341,5 @@ browser.runtime.onMessage.addListener((message) => {
 });
 
 // ---- Initial setup ----
+loadTheme();
 loadSettingsToForm();
