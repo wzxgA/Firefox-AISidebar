@@ -15,6 +15,7 @@ const apiUrlInput = document.getElementById('api-url');
 const apiKeyInput = document.getElementById('api-key');
 const modelNameInput = document.getElementById('model-name');
 const themeSelect = document.getElementById('theme-select');
+const systemPromptInput = document.getElementById('system-prompt');
 
 document.getElementById('open-settings').addEventListener('click', () => {
   loadSettingsToForm();
@@ -46,23 +47,28 @@ settingsForm.addEventListener('submit', (e) => {
     apiUrl: apiUrlInput.value.trim(),
     apiKey: apiKeyInput.value.trim(),
     modelName: modelNameInput.value.trim(),
-    theme: themeSelect.value
+    theme: themeSelect.value,
+    systemPrompt: systemPromptInput.value.trim()
   }).then(() => {
     settingsPanel.classList.add('hidden');
   });
 });
+
+const DEFAULT_SYSTEM_PROMPT = 'You are a helpful assistant. When provided with context from a webpage, use it to answer the user\'s question. Format your responses with markdown for readability.';
 
 function loadSettingsToForm() {
   browser.storage.local.get({
     apiUrl: 'https://api.openai.com',
     apiKey: '',
     modelName: 'gpt-4o',
-    theme: 'light'
+    theme: 'light',
+    systemPrompt: DEFAULT_SYSTEM_PROMPT
   }).then((items) => {
     apiUrlInput.value = items.apiUrl;
     apiKeyInput.value = items.apiKey;
     modelNameInput.value = items.modelName;
     themeSelect.value = items.theme;
+    systemPromptInput.value = items.systemPrompt;
   });
 }
 
@@ -178,7 +184,8 @@ async function sendMessage() {
   const settings = await browser.storage.local.get({
     apiUrl: 'https://api.openai.com',
     apiKey: '',
-    modelName: 'gpt-4o'
+    modelName: 'gpt-4o',
+    systemPrompt: DEFAULT_SYSTEM_PROMPT
   });
 
   if (!settings.apiKey) {
@@ -202,9 +209,9 @@ async function sendMessage() {
   typingIndicator.classList.add('active');
   sendBtn.disabled = true;
 
-  // Build messages array
+  // Build messages array with custom system prompt
   const messages = [
-    { role: 'system', content: 'You are a helpful assistant. When provided with context from a webpage, use it to answer the user\'s question. Format your responses with markdown for readability.' },
+    { role: 'system', content: settings.systemPrompt || DEFAULT_SYSTEM_PROMPT },
     ...conversationHistory
   ];
 

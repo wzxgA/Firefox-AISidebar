@@ -404,7 +404,7 @@ label {
   letter-spacing: var(--letter-spacing);
 }
 
-input {
+input, textarea {
   width: 100%;
   padding: 8px 10px;
   border: var(--border-width) solid var(--input-border);
@@ -416,14 +416,19 @@ input {
   transition: var(--transition);
 }
 
-input:focus {
+input:focus, textarea:focus {
   outline: none;
   border-color: var(--input-focus-border);
   box-shadow: var(--input-focus-shadow);
 }
 
-input::placeholder {
+input::placeholder, textarea::placeholder {
   color: var(--input-placeholder);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
 }
 
 .password-row {

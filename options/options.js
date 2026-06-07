@@ -2,6 +2,8 @@ function applyTheme(theme) {
   document.body.className = `theme-${theme}`;
 }
 
+const DEFAULT_SYSTEM_PROMPT = 'You are a helpful assistant. When provided with context from a webpage, use it to answer the user\'s question. Format your responses with markdown for readability.';
+
 function saveOptions(e) {
   e.preventDefault();
 
@@ -9,12 +11,14 @@ function saveOptions(e) {
   const apiKey = document.getElementById('api-key').value.trim();
   const modelName = document.getElementById('model-name').value.trim();
   const theme = document.getElementById('theme-select').value;
+  const systemPrompt = document.getElementById('system-prompt').value.trim();
 
   browser.storage.local.set({
     apiUrl,
     apiKey,
     modelName,
-    theme
+    theme,
+    systemPrompt
   }).then(() => {
     const status = document.getElementById('status');
     status.textContent = 'Settings saved!';
@@ -28,12 +32,14 @@ function restoreOptions() {
     apiUrl: 'https://api.openai.com',
     apiKey: '',
     modelName: 'gpt-4o',
-    theme: 'light'
+    theme: 'light',
+    systemPrompt: DEFAULT_SYSTEM_PROMPT
   }).then((items) => {
     document.getElementById('api-url').value = items.apiUrl;
     document.getElementById('api-key').value = items.apiKey;
     document.getElementById('model-name').value = items.modelName;
     document.getElementById('theme-select').value = items.theme;
+    document.getElementById('system-prompt').value = items.systemPrompt;
     applyTheme(items.theme);
   });
 }
