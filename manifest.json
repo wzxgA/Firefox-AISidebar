@@ -16,6 +16,14 @@
   "host_permissions": [
     "<all_urls>"
   ],
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": {
+        "default": "Ctrl+Alt+A"
+      },
+      "description": "Toggle LLM Sidebar"
+    }
+  },
   "sidebar_action": {
     "default_title": "LLM Sidebar",
     "default_panel": "sidebar/sidebar.html",
