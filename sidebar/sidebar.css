@@ -965,6 +965,36 @@ body.theme-pixel .messages::-webkit-scrollbar-thumb {
   border-color: var(--accent);
 }
 
+.message-copy-btn {
+  position: absolute;
+  bottom: 34px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition);
+  line-height: 1;
+}
+
+.message.assistant:hover .message-copy-btn {
+  opacity: 1;
+}
+
+.message-copy-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 .message.assistant.error {
   border-color: var(--msg-error-border);
   background: var(--msg-error-bg);

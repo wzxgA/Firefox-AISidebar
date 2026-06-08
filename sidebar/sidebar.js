@@ -164,8 +164,23 @@ function addMessage(role, content, isError = false) {
     div.textContent = content;
   }
 
-  // Add save button for assistant (non-error) messages
+  // Add copy + save buttons for assistant (non-error) messages
   if (role === 'assistant' && !isError) {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'message-copy-btn';
+    copyBtn.title = 'Copy';
+    copyBtn.innerHTML = '&#x1f4cb;';
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const msgContent = div.querySelector('.msg-content');
+      const text = msgContent ? msgContent.textContent : '';
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerHTML = '&#x2713;';
+        setTimeout(() => { copyBtn.innerHTML = '&#x1f4cb;'; }, 1500);
+      }).catch(() => {});
+    });
+    div.appendChild(copyBtn);
+
     const saveBtn = document.createElement('button');
     saveBtn.className = 'message-save-btn';
     saveBtn.title = 'Save as .md';
