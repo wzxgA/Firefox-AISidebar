@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="9020d071-8b36-475a-9ec8-aab0034c368b" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sidebar/sidebar.html" beforeDir="false" afterPath="$PROJECT_DIR$/sidebar/sidebar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/manifest.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +37,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/DevProject/llq/icons",
@@ -71,6 +72,7 @@
       <updated>1754488488195</updated>
       <workItem from="1754488489516" duration="844000" />
       <workItem from="1780838733810" duration="6276000" />
+      <workItem from="1780895616857" duration="10000" />
     </task>
     <servers />
   </component>

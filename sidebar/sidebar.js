@@ -271,7 +271,8 @@ async function sendMessage() {
 
   // Show typing indicator
   typingIndicator.classList.add('active');
-  sendBtn.disabled = true;
+  sendBtn.disabled = false;
+  sendBtn.innerHTML = '&#x25a0;'; // Stop icon
 
   // Build messages array with custom system prompt
   const messages = [
@@ -368,6 +369,7 @@ async function sendMessage() {
   } finally {
     typingIndicator.classList.remove('active');
     sendBtn.disabled = false;
+    sendBtn.innerHTML = '&#x27a4;';
     abortController = null;
     currentAssistantMsg = null;
   }
@@ -379,6 +381,16 @@ function abortSend() {
     abortController = null;
     typingIndicator.classList.remove('active');
     sendBtn.disabled = false;
+    sendBtn.innerHTML = '&#x27a4;';
+  }
+}
+
+function abortSummary() {
+  if (summaryAbortController) {
+    summaryAbortController.abort();
+    summaryAbortController = null;
+    summarizeBtn.disabled = false;
+    summarizeBtn.textContent = 'Summarize Page';
   }
 }
 
@@ -455,8 +467,8 @@ async function summarizePage() {
     : pageText;
 
   // UI state
-  summarizeBtn.disabled = true;
-  summarizeBtn.textContent = 'Summarizing...';
+  summarizeBtn.disabled = false;
+  summarizeBtn.textContent = 'Stop';
   summaryContent.innerHTML = '<div class="summary-result"><em>Generating summary...</em></div>';
 
   summaryAbortController = new AbortController();
@@ -558,7 +570,13 @@ async function summarizePage() {
   }
 }
 
-summarizeBtn.addEventListener('click', summarizePage);
+summarizeBtn.addEventListener('click', () => {
+  if (summaryAbortController) {
+    abortSummary();
+  } else {
+    summarizePage();
+  }
+});
 
 // ---- Summary History ----
 const clearHistoryBtn = document.getElementById('clear-history');
@@ -678,7 +696,13 @@ function escapeHtml(str) {
 }
 
 // ---- Event Listeners ----
-sendBtn.addEventListener('click', sendMessage);
+sendBtn.addEventListener('click', () => {
+  if (abortController) {
+    abortSend();
+  } else {
+    sendMessage();
+  }
+});
 
 userInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
