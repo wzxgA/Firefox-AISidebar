@@ -359,7 +359,10 @@ async function updateConvTitle() {
 function renderMarkdown(text) {
   if (!text) return '';
 
-  let html = text
+  // Normalize line endings
+  let html = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+  html = html
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
@@ -367,6 +370,39 @@ function renderMarkdown(text) {
   // Code blocks ```
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
     return `<pre><code>${code.trim()}</code></pre>`;
+  });
+
+  // Horizontal rule --- or ***
+  html = html.replace(/^[\-*]{3,}$/gm, '<hr>');
+
+  // Tables — find blocks of consecutive lines containing |
+  // Lines may or may not start/end with |
+  html = html.replace(/((?:^.*\|.*$\n?)+)/gm, (match) => {
+    const lines = match.trim().split('\n');
+    if (lines.length < 2) return match;
+
+    // Strip leading/trailing pipes from a cell line
+    const strip = (l) => l.replace(/^\s*\|?\s*/, '').replace(/\s*\|?\s*$/, '');
+
+    // Find the separator line (e.g., |---|---| or | :--- | ---: |)
+    const sepIdx = lines.findIndex((l, i) => i > 0 && /^[\s|:\-]+$/.test(l) && /-/.test(l));
+    if (sepIdx < 1) return match;
+
+    let tbl = '<table>';
+    // Header
+    tbl += '<thead><tr>' + splitCells(strip(lines[0]))
+      .map(c => `<th>${c.trim()}</th>`)
+      .join('') + '</tr></thead>';
+
+    // Body
+    tbl += '<tbody>';
+    for (let i = sepIdx + 1; i < lines.length; i++) {
+      tbl += '<tr>' + splitCells(strip(lines[i]))
+        .map(c => `<td>${c.trim()}</td>`)
+        .join('') + '</tr>';
+    }
+    tbl += '</tbody></table>';
+    return tbl;
   });
 
   // Inline code `...`
@@ -395,13 +431,20 @@ function renderMarkdown(text) {
   html = '<p>' + html + '</p>';
 
   // Fix nested block elements inside <p>
-  html = html.replace(/<p><(pre|ul|ol|h[2-4])/g, '<$1');
-  html = html.replace(/<\/(pre|ul|ol|h[2-4])><\/p>/g, '</$1>');
+  html = html.replace(/<p><(pre|ul|ol|table|h[2-4]|hr)/g, '<$1');
+  html = html.replace(/<\/(pre|ul|ol|table|h[2-4])><\/p>/g, '</$1>');
 
   // Clean up empty <p> tags
   html = html.replace(/<p>\s*<\/p>/g, '');
 
   return html;
+}
+
+// Split a table row by | without breaking on empty splits
+function splitCells(str) {
+  const cells = str.split('|');
+  // Handle backslash-escaped pipes (optional — rare in LLM output)
+  return cells;
 }
 
 // ---- API Call (Streaming) ----

@@ -653,6 +653,31 @@ body.theme-pixel .tab-btn.active {
   margin: 10px 0 4px;
 }
 
+.summary-result table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: var(--font-size-xs);
+}
+
+.summary-result th,
+.summary-result td {
+  padding: 6px 8px;
+  border: var(--border-width) solid var(--border-color);
+  text-align: left;
+}
+
+.summary-result th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+}
+
+.summary-result hr {
+  border: none;
+  border-top: var(--border-width) solid var(--border-color);
+  margin: 12px 0;
+}
+
 #summarize-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -1067,6 +1092,31 @@ body.theme-pixel .messages::-webkit-scrollbar-thumb {
 .message.assistant pre code {
   background: none;
   padding: 0;
+}
+
+.message.assistant table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: var(--font-size-xs);
+}
+
+.message.assistant th,
+.message.assistant td {
+  padding: 6px 8px;
+  border: var(--border-width) solid var(--border-color);
+  text-align: left;
+}
+
+.message.assistant th {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+}
+
+.message.assistant hr {
+  border: none;
+  border-top: var(--border-width) solid var(--border-color);
+  margin: 12px 0;
 }
 
 .message.assistant ul,
