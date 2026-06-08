@@ -6,6 +6,8 @@ const typingIndicator = document.getElementById('typing-indicator') || createTyp
 const summarizeBtn = document.getElementById('summarize-btn');
 const summaryContent = document.getElementById('summary-content');
 const summaryPageTitle = document.getElementById('summary-page-title');
+const convSelect = document.getElementById('conv-select');
+const newConvBtn = document.getElementById('new-conv-btn');
 
 let conversationHistory = [];
 let currentAssistantMsg = null;
@@ -13,6 +15,14 @@ let abortController = null;
 let summaryAbortController = null;
 let currentPageUrl = '';
 let savedSummary = null;
+
+// Conversation management
+const MAX_CONVERSATIONS = 5;
+const MAX_ROUNDS = 10;
+const MAX_AGE_DAYS = 7;
+let conversations = [];
+let activeConversationId = null;
+let renderingSelect = false;
 
 // ---- Tab Switching ----
 document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -139,12 +149,19 @@ function createTypingIndicator() {
 }
 
 // ---- Messages ----
-clearChatBtn.addEventListener('click', () => {
+clearChatBtn.addEventListener('click', async () => {
+  abortSend();
   conversationHistory = [];
-  // Remove all message elements, keep welcome
+  const conv = getActiveConversation();
+  if (conv) {
+    conv.messages = [];
+    conv.title = 'New Chat';
+    conv.updatedAt = new Date().toISOString();
+    await saveConversationsToStorage();
+    renderConvSelect();
+  }
   messagesEl.querySelectorAll('.message').forEach(m => m.remove());
   messagesEl.querySelector('.welcome-msg')?.classList.remove('hidden');
-  abortSend();
 });
 
 function addMessage(role, content, isError = false) {
@@ -203,6 +220,139 @@ function addMessage(role, content, isError = false) {
 
 function scrollToBottom() {
   messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// ---- Conversation Management ----
+function getActiveConversation() {
+  return conversations.find(c => c.id === activeConversationId);
+}
+
+async function saveConversationsToStorage() {
+  await browser.storage.local.set({ conversations, activeConversationId });
+}
+
+async function saveCurrentConversation() {
+  const conv = getActiveConversation();
+  if (!conv) return;
+  conv.messages = conversationHistory.slice(-MAX_ROUNDS * 2);
+  conv.updatedAt = new Date().toISOString();
+  // Auto-title from first user message
+  if (!conv.title || conv.title === 'New Chat') {
+    const firstUser = conv.messages.find(m => m.role === 'user');
+    if (firstUser) {
+      conv.title = firstUser.content.substring(0, 30);
+    }
+  }
+  await saveConversationsToStorage();
+}
+
+async function loadConversations() {
+  const { conversations: stored, activeConversationId: storedId } =
+    await browser.storage.local.get({ conversations: [], activeConversationId: null });
+
+  const now = Date.now();
+  const maxAge = MAX_AGE_DAYS * 24 * 60 * 60 * 1000;
+
+  conversations = (stored || [])
+    .filter(c => c.messages && c.messages.length > 0)
+    .filter(c => now - new Date(c.updatedAt).getTime() < maxAge);
+
+  activeConversationId = (storedId && conversations.find(c => c.id === storedId))
+    ? storedId
+    : null;
+
+  if (conversations.length === 0) {
+    conversations.push({
+      id: Date.now(),
+      title: 'New Chat',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      messages: []
+    });
+    activeConversationId = conversations[0].id;
+    await saveConversationsToStorage();
+  }
+
+  if (!activeConversationId) {
+    activeConversationId = conversations[0].id;
+    await saveConversationsToStorage();
+  }
+}
+
+function renderConvSelect() {
+  if (!convSelect) return;
+  renderingSelect = true;
+  convSelect.innerHTML = conversations.map(c =>
+    `<option value="${c.id}" ${c.id === activeConversationId ? 'selected' : ''}>${escapeHtml(c.title || 'New Chat')}</option>`
+  ).join('');
+  renderingSelect = false;
+}
+
+async function createConversation() {
+  if (conversations.length >= MAX_CONVERSATIONS) return null;
+
+  // Save current before switching
+  await saveCurrentConversation();
+
+  const conv = {
+    id: Date.now(),
+    title: 'New Chat',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    messages: []
+  };
+  conversations.unshift(conv);
+  activeConversationId = conv.id;
+  await saveConversationsToStorage();
+  renderConvSelect();
+
+  // Reset UI
+  messagesEl.querySelectorAll('.message').forEach(m => m.remove());
+  const welcome = messagesEl.querySelector('.welcome-msg');
+  if (welcome) welcome.classList.remove('hidden');
+  conversationHistory = [];
+  abortSend();
+
+  return conv;
+}
+
+async function switchConversation(id) {
+  if (id === activeConversationId) return;
+  abortSend();
+
+  // Save current
+  await saveCurrentConversation();
+
+  // Switch
+  activeConversationId = id;
+  const conv = getActiveConversation();
+  conversationHistory = conv ? [...conv.messages] : [];
+
+  // Re-render UI
+  messagesEl.querySelectorAll('.message').forEach(m => m.remove());
+  const welcome = messagesEl.querySelector('.welcome-msg');
+  if (conversationHistory.length > 0) {
+    if (welcome) welcome.classList.add('hidden');
+    conversationHistory.forEach(msg => addMessage(msg.role, msg.content));
+  } else {
+    if (welcome) welcome.classList.remove('hidden');
+  }
+
+  renderConvSelect();
+  await saveConversationsToStorage();
+}
+
+async function updateConvTitle() {
+  const conv = getActiveConversation();
+  if (conv && (!conv.title || conv.title === 'New Chat')) {
+    const firstUser = conversationHistory.find(m => m.role === 'user');
+    if (firstUser) {
+      conv.title = firstUser.content.substring(0, 30);
+      conv.updatedAt = new Date().toISOString();
+      await saveConversationsToStorage();
+      renderConvSelect();
+    }
+  }
 }
 
 // ---- Lightweight Markdown Renderer ----
@@ -279,6 +429,13 @@ async function sendMessage() {
 
   addMessage('user', displayContent);
   conversationHistory.push({ role: 'user', content: userContent });
+  // Truncate to last 10 rounds
+  if (conversationHistory.length > MAX_ROUNDS * 2) {
+    conversationHistory = conversationHistory.slice(-MAX_ROUNDS * 2);
+  }
+
+  // Update conversation title from first user message
+  updateConvTitle();
 
   // Clear input
   userInput.value = '';
@@ -289,7 +446,7 @@ async function sendMessage() {
   sendBtn.disabled = false;
   sendBtn.innerHTML = '&#x25a0;'; // Stop icon
 
-  // Build messages array with custom system prompt
+  // Build messages array with custom system prompt (already truncated above)
   const messages = [
     { role: 'system', content: settings.systemPrompt || DEFAULT_SYSTEM_PROMPT },
     ...conversationHistory
@@ -369,6 +526,13 @@ async function sendMessage() {
     }
 
     conversationHistory.push({ role: 'assistant', content: fullContent });
+    // Truncate to last 10 rounds
+    if (conversationHistory.length > MAX_ROUNDS * 2) {
+      conversationHistory = conversationHistory.slice(-MAX_ROUNDS * 2);
+    }
+    // Persist
+    saveCurrentConversation();
+
     if (!fullContent) {
       currentAssistantMsg.querySelector('.msg-content').innerHTML = '*(No response)*';
     }
@@ -740,6 +904,20 @@ function escapeHtml(str) {
 }
 
 // ---- Event Listeners ----
+convSelect.addEventListener('change', () => {
+  if (renderingSelect) return;
+  const id = Number(convSelect.value);
+  if (id && id !== activeConversationId) switchConversation(id);
+});
+
+newConvBtn.addEventListener('click', () => {
+  if (conversations.length >= MAX_CONVERSATIONS) {
+    // Silently ignore, or could flash a message
+    return;
+  }
+  createConversation();
+});
+
 sendBtn.addEventListener('click', () => {
   if (abortController) {
     abortSend();
@@ -775,6 +953,22 @@ browser.runtime.onMessage.addListener((message) => {
 });
 
 // ---- Initial setup ----
-loadTheme();
-loadSettingsToForm();
-updatePageInfo();
+async function init() {
+  loadTheme();
+  loadSettingsToForm();
+  updatePageInfo();
+
+  await loadConversations();
+  const conv = getActiveConversation();
+  conversationHistory = conv ? [...conv.messages] : [];
+  renderConvSelect();
+
+  // Restore messages if any
+  if (conversationHistory.length > 0) {
+    const welcome = messagesEl.querySelector('.welcome-msg');
+    if (welcome) welcome.classList.add('hidden');
+    conversationHistory.forEach(msg => addMessage(msg.role, msg.content));
+  }
+}
+
+init();

@@ -473,6 +473,34 @@ body.theme-pixel .chat-header {
   align-items: center;
 }
 
+/* ===== CONVERSATION BAR ===== */
+.conv-bar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  border-bottom: var(--border-width) solid var(--header-border);
+  background: var(--header-bg);
+  flex-shrink: 0;
+}
+
+.conv-bar select {
+  flex: 1;
+  padding: 4px 6px;
+  border: var(--border-width) solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.conv-bar select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* ===== TAB BAR ===== */
 .tab-bar {
   display: flex;
