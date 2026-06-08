@@ -760,6 +760,18 @@ body.theme-pixel .tab-btn.active {
   font-size: var(--font-size-xs);
 }
 
+.msg-tokens {
+  margin-top: 6px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.summary-result .msg-tokens {
+  text-align: left;
+  margin-bottom: 4px;
+}
+
 .history-empty {
   text-align: center;
   color: var(--text-muted);

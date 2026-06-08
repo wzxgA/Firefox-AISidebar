@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9020d071-8b36-475a-9ec8-aab0034c368b" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/LLM-SideBar.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ydm.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/sidebar/sidebar.css" beforeDir="false" afterPath="$PROJECT_DIR$/sidebar/sidebar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sidebar/sidebar.js" beforeDir="false" afterPath="$PROJECT_DIR$/sidebar/sidebar.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +73,7 @@
       <workItem from="1754488489516" duration="844000" />
       <workItem from="1780838733810" duration="6276000" />
       <workItem from="1780895616857" duration="10000" />
-      <workItem from="1780905201480" duration="309000" />
+      <workItem from="1780905201480" duration="672000" />
     </task>
     <servers />
   </component>

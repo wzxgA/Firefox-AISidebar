@@ -332,6 +332,7 @@ async function sendMessage() {
     // Create assistant message for streaming
     currentAssistantMsg = addMessage('assistant', '');
     let fullContent = '';
+    let usage = null;
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -360,6 +361,7 @@ async function sendMessage() {
             currentAssistantMsg.querySelector('.msg-content').innerHTML = renderMarkdown(fullContent);
             scrollToBottom();
           }
+          if (parsed.usage) usage = parsed.usage;
         } catch {
           // Skip malformed chunks
         }
@@ -370,6 +372,9 @@ async function sendMessage() {
     if (!fullContent) {
       currentAssistantMsg.querySelector('.msg-content').innerHTML = '*(No response)*';
     }
+
+    // Show token count
+    if (usage) showTokenInfo(currentAssistantMsg, usage);
 
   } catch (err) {
     if (err.name === 'AbortError') return;
@@ -407,6 +412,17 @@ function abortSummary() {
     summarizeBtn.disabled = false;
     summarizeBtn.textContent = 'Summarize Page';
   }
+}
+
+// ---- Token Info ----
+function showTokenInfo(msgEl, usage) {
+  const row = document.createElement('div');
+  row.className = 'msg-tokens';
+  const parts = [];
+  if (usage.prompt_tokens) parts.push(`输入: ${usage.prompt_tokens}`);
+  if (usage.completion_tokens) parts.push(`输出: ${usage.completion_tokens}`);
+  row.textContent = parts.join('  ·  ');
+  msgEl.appendChild(row);
 }
 
 // ---- Save Message to .md ----
@@ -527,6 +543,7 @@ async function summarizePage() {
     summaryContent.innerHTML = '<div class="summary-result"></div>';
     const resultEl = summaryContent.querySelector('.summary-result');
     let fullContent = '';
+    let usage = null;
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -552,6 +569,7 @@ async function summarizePage() {
             fullContent += delta;
             resultEl.innerHTML = renderMarkdown(fullContent);
           }
+          if (parsed.usage) usage = parsed.usage;
         } catch { /* skip */ }
       }
     }
@@ -562,6 +580,17 @@ async function summarizePage() {
 
     savedSummary = fullContent;
     saveSummary(summaryPageTitle.textContent, currentPageUrl, fullContent);
+
+    // Show token count
+    if (usage) {
+      const tokenRow = document.createElement('div');
+      tokenRow.className = 'msg-tokens';
+      const parts = [];
+      if (usage.prompt_tokens) parts.push(`输入: ${usage.prompt_tokens}`);
+      if (usage.completion_tokens) parts.push(`输出: ${usage.completion_tokens}`);
+      tokenRow.textContent = parts.join('  ·  ');
+      resultEl.appendChild(tokenRow);
+    }
 
     // Add save button row
     const saveRow = document.createElement('div');
